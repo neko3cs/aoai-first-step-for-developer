@@ -1,0 +1,15 @@
+@apiKey = YOUR_API_KEY
+@endpoint = YOUR_ENDPOINT
+
+POST {{endpoint}} HTTP/1.1
+Content-Type: application/json
+api-key: {{apiKey}}
+
+{
+    "messages": [
+        {
+            "role":"user",
+            "content":"こんにちは"
+        }
+    ]
+}
