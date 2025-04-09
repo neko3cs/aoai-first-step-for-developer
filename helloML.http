@@ -1,5 +1,5 @@
-@apiKey = YOUR_API_KEY
 @endpoint = YOUR_ENDPOINT
+@apiKey = YOUR_API_KEY
 
 POST {{endpoint}} HTTP/1.1
 Content-Type: application/json
@@ -12,4 +12,91 @@ api-key: {{apiKey}}
             "content":"こんにちは"
         }
     ]
+}
+
+### Function Calling の実行
+
+# @userMessage = "熱海の名物を教えてください"
+@userMessage = "熱海の海辺にある露天風呂付きのホテルを一泊 2 万円未満で提示してください"
+
+POST {{endpoint}} HTTP/1.1
+Content-Type: application/json
+api-key: {{apiKey}}
+
+{
+    "messages": [
+        {"role": "user", "content": {{userMessage}}}
+    ],
+    "tool_choice" : "auto",
+    "tools": [
+        {
+            "type":"function",
+            "function": {
+                "name": "search_hotels",
+                "description": "指定されたパラメータに基づいて検索インデックスからホテルを取得します",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "location": {
+                            "type": "string",
+                            "description": "ホテルの場所 (神奈川、箱根など)"
+                        },
+                        "max_price": {
+                            "type": "number",
+                            "description": "ホテルの最大料金"
+                        },
+                        "features": {
+                            "type": "string",
+                            "description": "サービスのカンマ区切りリスト (露天風呂、無料 Wi-Fi など)"
+                        }
+                    },
+                    "required": ["location"]
+                }
+            }
+        }
+    ]
+}
+
+### Function Calling : 回答の生成を依頼
+POST {{endpoint}} HTTP/1.1
+Content-Type: application/json
+api-key: {{apiKey}}
+
+{
+    "messages": [
+    {
+        "content": null,
+        "role": "assistant",
+        "tool_calls": [
+            {
+                "function": {
+                    "arguments": "{\"location\":\"熱海\",\"max_price\":20000,\"features\":\"露天風呂\"}",
+                    "name": "search_hotels"
+                },
+                "id": "ここにレスポンスされた ID を記述",
+                "type": "function"
+            }
+        ]
+    },
+    {
+        "tool_call_id" : "ここにレスポンスされた ID を記述",
+        "role": "tool", 
+        "name": "search_hotels",
+        "content" : "名前 : ホテル Hot Ocean,一泊 : 19000, 住所 : 静岡県熱海市サンセットビーチ4-5-6, サービス : 無料 Wi-Fi, 露天風呂, ランドリーサービス"
+    }
+    ]
+}
+
+###dall-e-3 モデルによる画像の生成
+@dalle-endpoint = YOUR_ENDPOINT
+
+POST {{dalle-endpoint}} HTTP/1.1
+Content-Type: application/json
+api-key: {{apiKey}}
+
+{
+    "prompt": "デジタル化された近未来のオフィスのイメージを生成してください",
+    "size": "1024x1024", 
+    "n": 1,
+    "style": "vivid"
 }
